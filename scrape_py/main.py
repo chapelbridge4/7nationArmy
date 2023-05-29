@@ -20,6 +20,8 @@ def getProductPage(cookie):
     return r.get(url, headers=base_header)
 
 def getProductInfo(soup: Soup):
+    # TODO create an array to store all record
+    # TODO create a dict for every record
     toReturn = dict()
     products = soup.find_all("div", {"class": "riquadro"})
     for (i, prod) in enumerate(products):
