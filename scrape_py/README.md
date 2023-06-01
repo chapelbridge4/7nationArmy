@@ -1,2 +1,2 @@
 to download all dependencies run:
-    pip install -r requirements.txt
+    pip install -r scrape_py/requirements.txt
