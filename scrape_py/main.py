@@ -21,26 +21,51 @@ def getProductPage(cookie: str, header: dict):
 
     return r.get(url, headers=header)
 
+def newetProductInfo(link: str = '', header: dict = ''):
+    # res = r.get(link, headers=header)
+    res = open('test.html', 'r').read()
+    soup = Soup(res, 'html.parser')
+
+    # img = soup.find(attrs={'id': 'FOTO_0_GRANDE'})['src']
+    # desc = soup.find(attrs={'class': 'desc-breve'}).find_all('p')
+    # print(desc[2].text)
+    #for item in desc.find_all('p'): pass
+        #print(item)
+        #print()
+    #print(desc)
+    return res
+
 def getProductInfo(soup: Soup):
     # scrape a product page
     # retrieve product name, product image, product price
-    toReturn = []
+    toReturn = {}
+    toScrape = []
     products = soup.find_all("div", {"class": "riquadro"})
     for (i, prod) in enumerate(products):
         a_tag = prod.find('a', {"class": 'cat-linkprod'})
         img = a_tag.img['src']
+        prodLink = a_tag['href']
         title = a_tag.attrs['title']
         price = prod.find('div', {"class": "prezzo"}).get_text().replace('\u20ac\u00a0', '')
 
         # print(f'Product: {title}\n\timg_link: {img}\n\tprice: {price}')
-        toReturn.append({
+        toReturn[i] = {
             'name': title,
             'img': img,
             'price': price
-        })
-    
-    return toReturn
+        }
 
+        toScrape.append(str(prodLink))
+    
+    return toReturn, toScrape
+
+def scrapeProductPage(toScrape: list[str], header: dict):
+    for (i, link) in enumerate(toScrape):
+        res = r.get(link, header)
+        soup = Soup(res.content, 'lxml')
+        desc = soup.find('div', {'class': 'desc-breve'}).text.replace("\n", "")
+        print(f'product n: {i}\n\tlink: {link}\n\tdesc: {desc}')
+        # merge desc with toReturn
 def run():
     base_header = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -64,8 +89,11 @@ def run():
 
     soup = Soup(res.content,'lxml')
     res = getProductInfo(soup)
-
-    open('products.json', 'w').write(dumps(res, indent=4))
+    # res = newGetProductInfo('https://www.target-softair.com/cat0_18595_1196/softair/fucili-a-pompa/p751096-bo-fabarm-stf12-black-compact.php', header=base_header)
+    # print(res.status_code)
+    
+    scrapeProductPage(res[1], base_header)
+    open('products.json', 'w').write(dumps(res[0], indent=4))
 
 if __name__ == '__main__':
     run()
